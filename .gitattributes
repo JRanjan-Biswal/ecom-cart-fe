@@ -5,9 +5,6 @@ package-lock.json merge=copy-merge
 pnpm-lock.yaml merge=copy-merge
 setup.sh merge=copy-merge
 
-# __CRIO__
-__CRIO__/metadata.json merge=copy-merge
-
 # backend/
 backend/db/products.db merge=copy-merge
 backend/routes/auth.js merge=copy-merge

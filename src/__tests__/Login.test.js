@@ -13,19 +13,19 @@ const mock = new MockAdapter(axios);
 
 mock
   .onPost(`${config.endpoint}/auth/login`, {
-    username: "crio.do",
+    username: "jranjan",
     password: "learnbydoing",
   })
   .reply(201, {
     success: true,
     token: "testtoken",
-    username: "crio.do",
+    username: "jranjan",
     balance: 5000,
   });
 
 mock
   .onPost(`${config.endpoint}/auth/login`, {
-    username: "crio.do",
+    username: "jranjan",
     password: "wrongpassword",
   })
   .reply(400, {
@@ -103,7 +103,7 @@ describe("Login Page", () => {
 
     userEvent.type(passwordInput, "learnbydoing");
 
-    userEvent.click(screen.getByText(/login to qkart/i));    
+    userEvent.click(screen.getByText(/login to EComCart/i));    
 
     const alert = await screen.findByRole("alert");
     expect(alert).toBeInTheDocument();
@@ -113,9 +113,9 @@ describe("Login Page", () => {
   it("should throw error if password field is empty", async () => {
     const usernameInput = screen.getByLabelText(/username/i);
 
-    userEvent.type(usernameInput, "crio.do");
+    userEvent.type(usernameInput, "jranjan");
 
-    userEvent.click(screen.getByText(/login to qkart/i));    
+    userEvent.click(screen.getByText(/login to EComCart/i));    
 
     const alert = await screen.findByRole("alert");
     expect(alert).toBeInTheDocument();
@@ -134,7 +134,7 @@ describe("Login Page", () => {
 
   it("should send a POST request with axios", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
@@ -143,7 +143,7 @@ describe("Login Page", () => {
     expect(passwordInput).toHaveValue(request.password);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     const loginPostCall = mock.history.post.find(
@@ -154,7 +154,7 @@ describe("Login Page", () => {
 
   it("should send a POST request to server with correct arguments", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
@@ -163,7 +163,7 @@ describe("Login Page", () => {
     expect(passwordInput).toHaveValue(request.password);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     const loginPostCall = mock.history.post.find(
@@ -180,14 +180,14 @@ describe("Login Page", () => {
 
   it("should show success alert if request succeeds", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
     performFormInput(request);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     const alert = await screen.findByRole("alert");
@@ -196,14 +196,14 @@ describe("Login Page", () => {
 
   it("should show error alert with message sent from backend if request fails", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "wrongpassword",
     };
 
     performFormInput(request);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     const alert = await screen.findByRole("alert");
@@ -212,19 +212,19 @@ describe("Login Page", () => {
 
   it("should store values in local storage if request succeeds", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
     performFormInput(request);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
       "username",
-      "crio.do"
+      "jranjan"
     );
     expect(window.localStorage.setItem).toHaveBeenCalledWith("balance", 5000);
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
@@ -235,14 +235,14 @@ describe("Login Page", () => {
 
   it("should redirect to products page after success", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
     performFormInput(request);
 
     await act(async () => {
-      userEvent.click(screen.getByText(/login to qkart/i));
+      userEvent.click(screen.getByText(/login to EComCart/i));
     });
 
     expect(history.location.pathname).toBe("/");

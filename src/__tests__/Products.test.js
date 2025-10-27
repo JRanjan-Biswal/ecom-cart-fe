@@ -132,7 +132,7 @@ describe("Products Page - Header: Logged in", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    localStorage.setItem("username", "crio.do");
+    localStorage.setItem("username", "jranjan");
     localStorage.setItem("token", "testtoken");
 
     await act(async () => {
@@ -141,8 +141,8 @@ describe("Products Page - Header: Logged in", () => {
   });
 
   it("should have username & avatar in header if logged in", () => {
-    const avatar = screen.getByAltText(/crio.do/i);
-    const username = screen.getByText(/crio.do/i);
+    const avatar = screen.getByAltText(/jranjan/i);
+    const username = screen.getByText(/jranjan/i);
     expect(avatar).toBeInTheDocument();
     expect(username).toBeInTheDocument();
   });

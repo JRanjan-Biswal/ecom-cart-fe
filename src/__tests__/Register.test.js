@@ -13,7 +13,7 @@ const mock = new MockAdapter(axios);
 
 mock
   .onPost(`${config.endpoint}/auth/register`, {
-    username: "crio.do",
+    username: "jranjan",
     password: "learnbydoing",
   })
   .reply(201, { success: true });
@@ -109,9 +109,9 @@ describe("Register Page", () => {
   it("should show error message if password empty", async () => {
     const usernameInput = screen.getByLabelText(/username/i);
 
-    userEvent.type(usernameInput, "crio.do");
+    userEvent.type(usernameInput, "jranjan");
 
-    expect(usernameInput).toHaveValue("crio.do");
+    expect(usernameInput).toHaveValue("jranjan");
 
     userEvent.click(screen.getByRole("button", { name: /register/i }));
 
@@ -125,7 +125,7 @@ describe("Register Page", () => {
     const [passwordInput, confirmPasswordInput] =
       screen.getAllByLabelText(/password/i);
 
-    userEvent.type(usernameInput, "crio.do");
+    userEvent.type(usernameInput, "jranjan");
     userEvent.type(passwordInput, "lea");
     userEvent.type(confirmPasswordInput, "lea");
 
@@ -141,7 +141,7 @@ describe("Register Page", () => {
     const [passwordInput, confirmPassword] =
       screen.getAllByLabelText(/password/i);
 
-    userEvent.type(usernameInput, "crio.do");
+    userEvent.type(usernameInput, "jranjan");
     userEvent.type(passwordInput, "Hello!Password");
     userEvent.type(confirmPassword, "Password");
 
@@ -166,7 +166,7 @@ describe("Register Page", () => {
 
   it("should send a POST request with axios", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
@@ -188,7 +188,7 @@ describe("Register Page", () => {
 
   it("should send a POST request to server with correct arguments", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
@@ -217,7 +217,7 @@ describe("Register Page", () => {
 
   it("should show success alert if request succeeds", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 
@@ -249,7 +249,7 @@ describe("Register Page", () => {
 
   it("should redirect to login after success", async () => {
     const request = {
-      username: "crio.do",
+      username: "jranjan",
       password: "learnbydoing",
     };
 

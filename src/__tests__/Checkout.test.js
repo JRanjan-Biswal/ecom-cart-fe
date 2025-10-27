@@ -107,7 +107,7 @@ describe("Checkout Page", () => {
     // https://github.com/clarkbw/jest-localstorage-mock/issues/125
     jest.clearAllMocks();
 
-    localStorage.setItem("username", "crio.do");
+    localStorage.setItem("username", "jranjan");
     localStorage.setItem("token", "testtoken");
     localStorage.setItem("balance", "5000");
 
