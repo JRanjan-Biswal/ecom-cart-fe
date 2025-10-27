@@ -29,6 +29,9 @@ import AddLocationIcon from "@mui/icons-material/AddLocation";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
+import HistoryIcon from "@mui/icons-material/History";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { addToCart } from "../../store/slices/cartSlice";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -41,6 +44,7 @@ export default function ProfilePage() {
     mobile: "",
     addresses: [],
     balance: 0,
+    orders: [],
   });
 
   const [editingField, setEditingField] = useState(null);
@@ -109,6 +113,7 @@ export default function ProfilePage() {
         mobile: response.data.mobile || "",
         addresses: response.data.addresses || [],
         balance: response.data.balance || 0,
+        orders: response.data.orders || [],
       });
       setEditValues({ 
         name: response.data.name || "", 
@@ -130,6 +135,7 @@ export default function ProfilePage() {
         mobile: "",
         addresses: [],
         balance: defaultBalance || 0,
+        orders: [],
       });
       
       enqueueSnackbar(
@@ -236,6 +242,31 @@ export default function ProfilePage() {
       enqueueSnackbar("Address deleted successfully", { variant: "success" });
     } catch (error) {
       enqueueSnackbar("Failed to delete address", { variant: "error" });
+    }
+  };
+
+  const handleReorder = async (order) => {
+    const currentToken = token || (typeof window !== "undefined" ? window.localStorage.getItem("token") : null);
+    
+    if (!currentToken) {
+      enqueueSnackbar("Please login to reorder", { variant: "warning" });
+      return;
+    }
+
+    try {
+      // Add all items from the order to cart via API
+      for (const item of order.items) {
+        await axios.post(
+          `${config.endpoint}/cart`,
+          { productId: item.productId, qty: item.qty },
+          { headers: { Authorization: `Bearer ${currentToken}` } }
+        );
+      }
+      
+      enqueueSnackbar("Items added to cart successfully!", { variant: "success" });
+      router.push("/cart");
+    } catch (error) {
+      enqueueSnackbar("Failed to add items to cart", { variant: "error" });
     }
   };
 
@@ -434,6 +465,95 @@ export default function ProfilePage() {
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Box display="flex" alignItems="center" gap={1} mb={2}>
+                <HistoryIcon color="primary" />
+                <Typography variant="h6">Order History</Typography>
+              </Box>
+              <Divider sx={{ mb: 2 }} />
+
+              {profileData.orders.length === 0 ? (
+                <Typography color="text.secondary" textAlign="center" py={4}>
+                  No orders yet
+                </Typography>
+              ) : (
+                <Stack spacing={2}>
+                  {profileData.orders.map((order) => (
+                    <Box
+                      key={order._id}
+                      border="1px solid"
+                      borderColor="divider"
+                      borderRadius={1}
+                      p={2}
+                    >
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            Order #{order._id.slice(-8)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {new Date(order.date).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<ShoppingCartIcon />}
+                          onClick={() => handleReorder(order)}
+                        >
+                          Re-order
+                        </Button>
+                      </Box>
+                      
+                      <Box mb={2}>
+                        <Typography variant="body2" fontWeight="medium" mb={1}>
+                          Items:
+                        </Typography>
+                        {order.items.map((item, idx) => (
+                          <Box key={idx} display="flex" justifyContent="space-between" alignItems="center" py={0.5}>
+                            <Box display="flex" alignItems="center" gap={2} flex={1}>
+                              <img 
+                                src={item.image} 
+                                alt={item.name}
+                                style={{ 
+                                  width: 50, 
+                                  height: 50, 
+                                  objectFit: "cover", 
+                                  borderRadius: 4 
+                                }}
+                              />
+                              <Box>
+                                <Typography variant="body2">{item.name}</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Qty: {item.qty}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              ₹{item.cost * item.qty}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                      
+                      <Divider sx={{ my: 2 }} />
+                      
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" fontWeight="medium">
+                          Total:
+                        </Typography>
+                        <Typography variant="h6" color="primary">
+                          ₹{order.total}
+                        </Typography>
+                      </Box>
                     </Box>
                   ))}
                 </Stack>

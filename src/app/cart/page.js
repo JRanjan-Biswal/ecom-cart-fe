@@ -3,10 +3,11 @@
 import { Box, Button, Container, Grid, Typography, IconButton, Paper } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { updateCartItem, removeFromCart } from "../../store/slices/cartSlice";
+import { updateCartItem, removeFromCart, setCartItems, setProducts } from "../../store/slices/cartSlice";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import { config } from "../../config";
+import { generateCartItemsFrom } from "../../components/Cart";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import AddIcon from "@mui/icons-material/Add";
@@ -18,11 +19,14 @@ export default function CartPage() {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const cartItems = useSelector((state) => state.cart.items);
+  const products = useSelector((state) => state.cart.products);
 
   const handleQuantityChange = async (productId, newQty) => {
     if (newQty <= 0) {
+      // Quantity is 0 or less, remove the item
       removeItemFromCart(productId);
     } else {
+      // Update quantity
       updateItemQuantity(productId, newQty);
     }
   };
@@ -35,14 +39,27 @@ export default function CartPage() {
         return;
       }
 
-      await axios.delete(`${config.endpoint}/cart/${productId}`, {
+      const response = await axios.delete(`${config.endpoint}/cart/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      dispatch(removeFromCart(productId));
+      // Update Redux state with updated cart from backend
+      if (response.data) {
+        if (products.length > 0) {
+          const cartItems = generateCartItemsFrom(response.data, products) || [];
+          dispatch(setCartItems(cartItems));
+        } else {
+          // If no products loaded, just use the raw cart data
+          dispatch(setCartItems(response.data.map(item => ({
+            productId: item.productId,
+            qty: item.qty
+          }))));
+        }
+      }
+      
       enqueueSnackbar("Item removed from cart", { variant: "success" });
     } catch (error) {
-      enqueueSnackbar("Failed to remove item", { variant: "error" });
+      enqueueSnackbar(error.response?.data?.message || "Failed to remove item", { variant: "error" });
     }
   };
 
@@ -51,13 +68,19 @@ export default function CartPage() {
       const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
       if (!token) return;
 
-      await axios.post(
+      const response = await axios.post(
         `${config.endpoint}/cart`,
         { productId, qty },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      dispatch(updateCartItem({ productId, qty }));
+      // Update Redux state with backend response
+      if (response.data && products.length > 0) {
+        const cartItems = generateCartItemsFrom(response.data, products) || [];
+        dispatch(setCartItems(cartItems));
+      } else {
+        dispatch(updateCartItem({ productId, qty }));
+      }
     } catch (error) {
       enqueueSnackbar("Failed to update quantity", { variant: "error" });
     }

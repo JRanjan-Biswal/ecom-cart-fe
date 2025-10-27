@@ -12,7 +12,7 @@ import Header from "./Header";
 import "./Products.css";
 import ProductCard from "./ProductCard";
 import { useSelector, useDispatch } from "react-redux";
-import { setCartItems, setProducts } from "../store/slices/cartSlice";
+import { setCartItems, setProducts, updateCartItem, addToCart } from "../store/slices/cartSlice";
 import { generateCartItemsFrom } from "./Cart";
 
 const Products = () => {
@@ -32,26 +32,7 @@ const Products = () => {
 
   useEffect(() => {
     performAPICall();
-    initializeCart();
   }, []);
-
-  const initializeCart = async () => {
-    if (typeof window !== "undefined") {
-      const token = window.localStorage.getItem("token");
-      if (token) {
-        await fetchCart(token);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (products.length > 0) {
-      const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
-      if (token) {
-        fetchCart(token);
-      }
-    }
-  }, [products]);
 
   const performAPICall = async () => {
     setLoad(true);
@@ -78,28 +59,6 @@ const Products = () => {
         enqueueSnackbar(error.response.statusText, { variant: "warning" });
       }
       setSuccess(false);
-    }
-  };
-
-  const fetchCart = async (token) => {
-    if (!token) return;
-    try {
-      const response = await axios.get(`${config.endpoint}/cart`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      // Use all products from Redux state, or fallback to local data
-      const allProducts = products.length > 0 ? products : data.data;
-      const cartItems = generateCartItemsFrom(response.data, allProducts);
-      if (cartItems) {
-        dispatch(setCartItems(cartItems));
-      }
-    } catch (e) {
-      if (e.response && e.response.status === 400) {
-        enqueueSnackbar(e.response.data.message, { variant: "error" });
-      }
     }
   };
 
@@ -139,6 +98,19 @@ const Products = () => {
 
       const product = data.data.find(p => p._id === productId);
       
+      // Optimistically update the cart
+      if (product) {
+        const existingItem = cartItems.find(item => item.productId === productId);
+        if (existingItem) {
+          dispatch(updateCartItem({ productId, qty }));
+          enqueueSnackbar("Quantity updated!", { variant: "info" });
+        } else {
+          dispatch(addToCart({ product, qty }));
+          enqueueSnackbar(`${product?.name || "Item"} added to cart!`, { variant: "success" });
+        }
+      }
+      
+      // Then sync with backend
       const response = await axios.post(`${config.endpoint}/cart`, {
         "productId": productId,
         "qty": qty,
@@ -148,23 +120,24 @@ const Products = () => {
         }
       });
       
-      const cartItems = generateCartItemsFrom(response.data, data.data);
-      dispatch(setCartItems(cartItems || []));
-      
-      // Show success toast
-      const existingCartItem = cartItems.find(item => item.productId === productId);
-      if (existingCartItem && existingCartItem.qty === qty) {
-        enqueueSnackbar("Item already in cart! Quantity updated", { variant: "info" });
-      } else {
-        enqueueSnackbar(`${product?.name || "Item"} added to cart!`, { variant: "success" });
-      }
+      const backendCartItems = generateCartItemsFrom(response.data, data.data);
+      dispatch(setCartItems(backendCartItems || []));
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data.message?.includes("already")) {
-          enqueueSnackbar("Item already in cart! Please update quantity from cart.", { variant: "info" });
-        } else {
-          enqueueSnackbar(error.response.data.message || "Failed to add to cart", { variant: "error" });
+      // Revert optimistic update on error
+      if (typeof window !== "undefined") {
+        const token = window.localStorage.getItem("token");
+        if (token) {
+          axios.get(`${config.endpoint}/cart`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).then(response => {
+            const cartItems = generateCartItemsFrom(response.data, data.data);
+            dispatch(setCartItems(cartItems || []));
+          }).catch(() => {});
         }
+      }
+      
+      if (error.response) {
+        enqueueSnackbar(error.response.data.message || "Failed to add to cart", { variant: "error" });
       }
     }
   };
