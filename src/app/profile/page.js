@@ -31,13 +31,15 @@ import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import HistoryIcon from "@mui/icons-material/History";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { addToCart } from "../../store/slices/cartSlice";
+import { addToCart, setCartItems } from "../../store/slices/cartSlice";
+import { generateCartItemsFrom } from "../../components/Cart";
 
 export default function ProfilePage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
+  const products = useSelector((state) => state.cart.products);
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -261,6 +263,17 @@ export default function ProfilePage() {
           { productId: item.productId, qty: item.qty },
           { headers: { Authorization: `Bearer ${currentToken}` } }
         );
+      }
+      
+      // Fetch updated cart from backend
+      const cartResponse = await axios.get(`${config.endpoint}/cart`, {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+      
+      // Update Redux with the new cart
+      if (cartResponse.data && products.length > 0) {
+        const cartItems = generateCartItemsFrom(cartResponse.data, products) || [];
+        dispatch(setCartItems(cartItems));
       }
       
       enqueueSnackbar("Items added to cart successfully!", { variant: "success" });

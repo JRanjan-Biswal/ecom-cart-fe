@@ -48,13 +48,33 @@ const Checkout = () => {
   const [newAddress, setNewAddress] = useState({ isAddingNewAddress: false, value: "" });
   const [mounted, setMounted] = useState(false);
 
+  const fetchBalance = async (token) => {
+    if (!token) return;
+    try {
+      const response = await axios.get(`${config.endpoint}/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const newBalance = response.data.balance || 0;
+      setBalance(newBalance);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("balance", newBalance);
+      }
+      return newBalance;
+    } catch {
+      enqueueSnackbar("Could not fetch balance. Check that the backend is running.", { variant: "error" });
+      return null;
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem("token");
-      const storedBalance = localStorage.getItem("balance");
-      if (storedToken) setToken(storedToken);
-      if (storedBalance) setBalance(storedBalance);
+      if (storedToken) {
+        setToken(storedToken);
+        // Fetch balance from backend
+        fetchBalance(storedToken);
+      }
     }
   }, []);
 
@@ -196,6 +216,9 @@ const Checkout = () => {
         
         // Clear the cart from Redux store
         dispatch(clearCart());
+        
+        // Fetch updated balance after checkout
+        await fetchBalance(token);
         
         enqueueSnackbar("Checkout Successful", { variant: "success" });
         router.push("/thanks");
