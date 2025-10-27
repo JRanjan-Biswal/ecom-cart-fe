@@ -86,6 +86,7 @@
 }
 
 .search-mobile {
+  width: auto !important;
   display: block !important;
   margin: 1rem !important;
   background: #fff !important;
