@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "@mui/icons-material";
-import { CircularProgress, Grid, InputAdornment, TextField } from "@mui/material";
+import { CircularProgress, Grid, InputAdornment, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
@@ -11,6 +11,7 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
 import ProductCard from "./ProductCard";
+import Marquee from "./Marquee";
 import { useSelector, useDispatch } from "react-redux";
 import { setCartItems, setProducts, updateCartItem, addToCart } from "../store/slices/cartSlice";
 import { generateCartItemsFrom } from "./Cart";
@@ -189,47 +190,57 @@ const Products = () => {
         name="search"
       />
 
-      <Grid container mb={2}>
-        <Grid item xs={12}>
-          <Grid item className="product-grid">
-            <Box className="hero">
-              <p className="hero-heading">
-                India's <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
-                to your door step
-              </p>
-            </Box>
-          </Grid>
+      <Box sx={{ mt: { xs: 2, md: 3 }, px: { xs: 2, md: 0 } }}>
+        <Box className="product-grid">
+          <Box className="hero">
+            <p className="hero-heading">
+              India's <span className="hero-highlight">FASTEST DELIVERY</span>{" "}
+              to your door step
+            </p>
+          </Box>
+        </Box>
+        
+        {/* Marquee Section */}
+        <Marquee />
 
-          {load && (
-            <Grid container direction="column" justifyContent="center" alignItems="center" className="loading">
-              <Grid item>
-                <CircularProgress size={40} color="success" />
-              </Grid>
-              <Grid item>
-                <div>Loading Products...</div>
-              </Grid>
+        {/* Products Section */}
+        {!load && (
+          <Box sx={{ px: { xs: 2, md: 4 }, mt: 4, mb: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#212121', mb: 2 }}>
+              All Products
+            </Typography>
+          </Box>
+        )}
+
+        {load && (
+          <Grid container direction="column" justifyContent="center" alignItems="center" className="loading">
+            <Grid item>
+              <CircularProgress size={40} color="success" />
             </Grid>
-          )}
-
-          {!load && !success && (
-            <Grid container direction="column" justifyContent="center" alignItems="center" className="loading">
-              <Grid item>
-                <div>No Products Found</div>
-              </Grid>
-            </Grid>
-          )}
-
-          <Grid item ml={1} my={2}>
-            <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 1, md: 1 }}>
-              {success && data.data.map((item) => (
-                <Grid item xs={6} sm={6} md={3} key={item._id}>
-                  <ProductCard product={item} handleAddToCart={(selectedItem) => handleCart(selectedItem._id)} />
-                </Grid>
-              ))}
+            <Grid item>
+              <div>Loading Products...</div>
             </Grid>
           </Grid>
-        </Grid>
-      </Grid>
+        )}
+
+        {!load && !success && (
+          <Grid container direction="column" justifyContent="center" alignItems="center" className="loading">
+            <Grid item>
+              <div>No Products Found</div>
+            </Grid>
+          </Grid>
+        )}
+
+        <Box className="products-grid-container" sx={{ mt: 2 }}>
+          <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
+            {success && data.data.map((item) => (
+              <Grid item xs={6} sm={6} md={3} key={item._id}>
+                <ProductCard product={item} handleAddToCart={(selectedItem) => handleCart(selectedItem._id)} />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      </Box>
 
       <Footer />
     </div>
