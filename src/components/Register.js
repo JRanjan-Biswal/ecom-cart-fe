@@ -1,14 +1,17 @@
-import { Button, CircularProgress, Stack, TextField } from "@mui/material";
-import { Box } from "@mui/system";
+"use client";
+
+import { Button, CircularProgress, Stack, TextField, Typography, InputAdornment, IconButton } from "@mui/material";
+import { Box, Container } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { config } from "../config";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Register.css";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Visibility, VisibilityOff, Email, Lock, PersonAdd, ShoppingBag } from "@mui/icons-material";
 
 const Register = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -20,6 +23,8 @@ const Register = () => {
     confirmPassword: "",
     load: false,
     success: false,
+    showPassword: false,
+    showConfirmPassword: false,
   });
 
   const handleUserNameChange = (e) => {
@@ -50,6 +55,7 @@ const Register = () => {
           setUserInfo((userInfo) => ({ ...userInfo, load: false }));
           enqueueSnackbar("Registered successfully", { variant: "success" });
           setUserInfo((userInfo) => ({ ...userInfo, success: true }));
+          setTimeout(() => router.push("/login"), 1000);
         })
         .catch((err) => {
           setUserInfo((userInfo) => ({ ...userInfo, load: false }));
@@ -82,64 +88,175 @@ const Register = () => {
     return true;
   };
 
+  const handleClickShowPassword = () => {
+    setUserInfo((userInfo) => ({
+      ...userInfo,
+      showPassword: !userInfo.showPassword,
+    }));
+  };
+
+  const handleClickShowConfirmPassword = () => {
+    setUserInfo((userInfo) => ({
+      ...userInfo,
+      showConfirmPassword: !userInfo.showConfirmPassword,
+    }));
+  };
+
   return (
     <>
-      {userInfo.success ? router.push("/login") : (
-        <Box display="flex" flexDirection="column" justifyContent="space-between" minHeight="100vh">
+      {userInfo.success ? (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box className="register-container">
           <Header hasHiddenAuthButtons />
-          <Box className="content">
-            <Stack spacing={2} className="form">
-              <h2 className="title">Register</h2>
-              <TextField
-                id="username"
-                label="Username"
-                variant="outlined"
-                title="Username"
-                name="username"
-                value={userInfo["username"]}
-                placeholder="Enter Username"
-                onChange={handleUserNameChange}
-                fullWidth
-              />
-              <TextField
-                id="password"
-                variant="outlined"
-                label="Password"
-                name="password"
-                type="password"
-                helperText="Password must be atleast 6 characters length"
-                fullWidth
-                value={userInfo["password"]}
-                onChange={handlePassword}
-                placeholder="Enter a password with minimum 6 characters"
-              />
-              <TextField
-                id="confirmPassword"
-                variant="outlined"
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                value={userInfo["confirmPassword"]}
-                onChange={handleConfirmPassword}
-                fullWidth
-              />
-              {userInfo.load ? (
-                <Box display="flex" justifyContent="center">
-                  <CircularProgress />
+          <Box className="register-hero">
+            <div maxWidth="lg" className="register-content">
+              {/* Left Side - Welcome Text */}
+              <Box className="register-welcome">
+                <Typography variant="h2" className="welcome-title">
+                  Join EComCart Today
+                </Typography>
+                <Typography variant="h5" className="welcome-subtitle">
+                  Start Your Shopping Journey
+                </Typography>
+                <Box mt={3}>
+                  <Typography className="feature-text">
+                    ✓ Exclusive Member Benefits
+                  </Typography>
+                  <Typography className="feature-text">
+                    ✓ Secure Payment Processing
+                  </Typography>
+                  <Typography className="feature-text">
+                    ✓ Fast & Reliable Delivery
+                  </Typography>
                 </Box>
-              ) : (
-                <Button className="button" variant="contained" onClick={() => register(userInfo)}>
-                  Register Now
-                </Button>
-              )}
+              </Box>
 
-              <p className="secondary-action">
-                Already have an account?{" "}
-                <Link className="link" href="/login">
-                  Login here
-                </Link>
-              </p>
-            </Stack>
+              {/* Right Side - Register Form */}
+              <Box className="register-card">
+                <Box className="register-header">
+                  <Box className="logo-icon">
+                    <PersonAdd sx={{ fontSize: 40, color: "#fff" }} />
+                  </Box>
+                  <Typography variant="h3" className="register-title">
+                    Create Account
+                  </Typography>
+                  <Typography variant="body2" className="register-subtitle">
+                    Join EComCart and enjoy seamless shopping
+                  </Typography>
+                </Box>
+
+                <Stack spacing={3} className="register-form">
+                  <TextField
+                    id="username"
+                    name="username"
+                    label="Username"
+                    placeholder="Choose a username (min 6 characters)"
+                    variant="outlined"
+                    value={userInfo["username"]}
+                    onChange={handleUserNameChange}
+                    fullWidth
+                    className="register-input"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Email sx={{ color: "#00a278" }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  <TextField
+                    id="password"
+                    name="password"
+                    type={userInfo.showPassword ? "text" : "password"}
+                    label="Password"
+                    placeholder="Enter password (min 6 characters)"
+                    variant="outlined"
+                    value={userInfo["password"]}
+                    onChange={handlePassword}
+                    fullWidth
+                    className="register-input"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: "#00a278" }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            edge="end"
+                          >
+                            {userInfo.showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  <TextField
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={userInfo.showConfirmPassword ? "text" : "password"}
+                    label="Confirm Password"
+                    placeholder="Re-enter your password"
+                    variant="outlined"
+                    value={userInfo["confirmPassword"]}
+                    onChange={handleConfirmPassword}
+                    fullWidth
+                    className="register-input"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Lock sx={{ color: "#00a278" }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm password visibility"
+                            onClick={handleClickShowConfirmPassword}
+                            edge="end"
+                          >
+                            {userInfo.showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+
+                  {userInfo.load ? (
+                    <Box display="flex" justifyContent="center" py={2}>
+                      <CircularProgress size={40} />
+                    </Box>
+                  ) : (
+                    <Button 
+                      className="register-button" 
+                      variant="contained" 
+                      onClick={() => register(userInfo)}
+                      size="large"
+                      fullWidth
+                    >
+                      Create Account
+                    </Button>
+                  )}
+
+                  <Box className="register-footer">
+                    <Typography variant="body2" className="register-footer-text">
+                      Already have an account?{" "}
+                      <Link href="/login" className="register-link">
+                        Login here
+                      </Link>
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+            </div>
           </Box>
           <Footer />
         </Box>
