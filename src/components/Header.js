@@ -107,86 +107,117 @@ const Header = ({ children, hasHiddenAuthButtons }) => {
       </Stack>
 
       {/* Mobile Hamburger Menu */}
-      {isAuthenticated && (
-        <>
-          <IconButton className="mobile-menu-button" onClick={() => setMobileMenuOpen(true)} color="inherit">
-            <MenuIcon />
-          </IconButton>
-          
-          <Drawer
-            anchor="right"
-            open={mobileMenuOpen}
-            onClose={handleMobileMenuClose}
-            className="mobile-drawer"
-          >
-              <Box sx={{ width: 280 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
-                <Box className="header-title" onClick={() => { router.push("/"); handleMobileMenuClose(); }}>
-                  <img src="/logo_light.svg" alt="EcomCart-icon"></img>
-                </Box>
-                <IconButton onClick={handleMobileMenuClose}>
-                  <CloseIcon />
-                </IconButton>
+      <>
+        <IconButton className="mobile-menu-button" onClick={() => setMobileMenuOpen(true)} color="inherit">
+          <MenuIcon />
+        </IconButton>
+        
+        <Drawer
+          anchor="right"
+          open={mobileMenuOpen}
+          onClose={handleMobileMenuClose}
+          className="mobile-drawer"
+        >
+          <Box sx={{ width: 280 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
+              <Box className="header-title" onClick={() => { router.push("/"); handleMobileMenuClose(); }}>
+                <img src="/logo_light.svg" alt="EcomCart-icon"></img>
               </Box>
-              
-              <Divider />
-              
-              {/* User Info in Mobile Menu */}
-              <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
-                <Avatar sx={{ bgcolor: "#00a278" }}>
-                  {user ? user.charAt(0).toUpperCase() : "U"}
-                </Avatar>
-                <Box>
-                  <Typography variant="body2" fontWeight="medium">
-                    {user}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    My Account
-                  </Typography>
+              <IconButton onClick={handleMobileMenuClose}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            
+            <Divider />
+            
+            {isAuthenticated ? (
+              <>
+                {/* User Info in Mobile Menu */}
+                <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
+                  <Avatar sx={{ bgcolor: "#00a278" }}>
+                    {user ? user.charAt(0).toUpperCase() : "U"}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="body2" fontWeight="medium">
+                      {user}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      My Account
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-              
-              <Divider />
-              
-              <List>
-                <ListItem button onClick={() => handleNavigation("/cart")}>
-                  <ListItemIcon>
-                    <Badge badgeContent={cartCount} color="error">
-                      <ShoppingCartIcon />
-                    </Badge>
-                  </ListItemIcon>
-                  <ListItemText primary="Cart" secondary={`${cartCount} items`} />
-                </ListItem>
-                
-                <ListItem button onClick={() => handleNavigation("/wishlist")}>
-                  <ListItemIcon>
-                    <Badge badgeContent={wishlistCount} color="error">
-                      <FavoriteIcon />
-                    </Badge>
-                  </ListItemIcon>
-                  <ListItemText primary="Wishlist" secondary={`${wishlistCount} items`} />
-                </ListItem>
-                
-                <ListItem button onClick={() => handleNavigation("/profile")}>
-                  <ListItemIcon>
-                    <AccountCircleIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Profile" secondary={user} />
-                </ListItem>
                 
                 <Divider />
                 
-                <ListItem button onClick={handleLogout}>
-                  <ListItemIcon>
-                    <AccountCircleIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Logout" />
-                </ListItem>
+                <List>
+                  <ListItem button onClick={() => handleNavigation("/cart")}>
+                    <ListItemIcon>
+                      <Badge badgeContent={cartCount} color="error">
+                        <ShoppingCartIcon />
+                      </Badge>
+                    </ListItemIcon>
+                    <ListItemText primary="Cart" secondary={`${cartCount} items`} />
+                  </ListItem>
+                  
+                  <ListItem button onClick={() => handleNavigation("/wishlist")}>
+                    <ListItemIcon>
+                      <Badge badgeContent={wishlistCount} color="error">
+                        <FavoriteIcon />
+                      </Badge>
+                    </ListItemIcon>
+                    <ListItemText primary="Wishlist" secondary={`${wishlistCount} items`} />
+                  </ListItem>
+                  
+                  <ListItem button onClick={() => handleNavigation("/profile")}>
+                    <ListItemIcon>
+                      <AccountCircleIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Profile" secondary={user} />
+                  </ListItem>
+                  
+                  <Divider />
+                  
+                  <ListItem button onClick={handleLogout}>
+                    <ListItemIcon>
+                      <AccountCircleIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Logout" />
+                  </ListItem>
+                </List>
+              </>
+            ) : (
+              /* Non-authenticated menu */
+              <List>
+                
+                {/* When on login/register pages - show the alternate option */}
+                {!isAuthenticated && (
+                  <>
+                    <ListItem button onClick={() => { handleNavigation("/"); setMobileMenuOpen(false); }}>
+                      <ListItemIcon>
+                        <ArrowBackIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Back to Home" />
+                    </ListItem>
+                    <Divider />
+                    <ListItem button onClick={() => { handleNavigation("/register"); setMobileMenuOpen(false); }}>
+                      <ListItemIcon>
+                        <AccountCircleIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Create Account" secondary="New to EComCart?" />
+                    </ListItem>
+                    <ListItem button onClick={() => { handleNavigation("/login"); setMobileMenuOpen(false); }}>
+                      <ListItemIcon>
+                        <AccountCircleIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Sign In" secondary="Already have an account?" />
+                    </ListItem>
+                  </>
+                )}
               </List>
-            </Box>
-          </Drawer>
-        </>
-      )}
+            )}
+          </Box>
+        </Drawer>
+      </>
 
       {/* Profile Popover */}
       <Popover

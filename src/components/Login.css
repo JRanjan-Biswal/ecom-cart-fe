@@ -285,4 +285,8 @@
     width: 60px;
     height: 60px;
   }
+
+  .feature-text {
+    text-align: center;
+  }
 }
