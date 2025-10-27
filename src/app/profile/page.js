@@ -22,6 +22,7 @@ import { config } from "../../config";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { logout, initializeAuth } from "../../store/slices/authSlice";
+import ProtectedRoute from "../../components/ProtectedRoute";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -34,7 +35,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { addToCart, setCartItems } from "../../store/slices/cartSlice";
 import { generateCartItemsFrom } from "../../components/Cart";
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -585,5 +586,13 @@ export default function ProfilePage() {
       </Container>
       <Footer />
     </>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfilePageContent />
+    </ProtectedRoute>
   );
 }

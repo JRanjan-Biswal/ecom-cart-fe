@@ -8,13 +8,14 @@ import axios from "axios";
 import { useSnackbar } from "notistack";
 import { config } from "../../config";
 import { generateCartItemsFrom } from "../../components/Cart";
+import ProtectedRoute from "../../components/ProtectedRoute";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
-export default function CartPage() {
+function CartPageContent() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -216,5 +217,13 @@ export default function CartPage() {
       </Container>
       <Footer />
     </>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <ProtectedRoute>
+      <CartPageContent />
+    </ProtectedRoute>
   );
 }

@@ -17,7 +17,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { addToWishlist, removeFromWishlist } from "../store/slices/wishlistSlice";
 import { useSnackbar } from "notistack";
 
-const ProductCard = ({ product, handleAddToCart }) => {
+const ProductCard = ({ product, handleAddToCart, hideWishlistButton = false }) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -42,13 +42,15 @@ const ProductCard = ({ product, handleAddToCart }) => {
 
   return (
     <Card className="card" sx={{ position: "relative" }}>
-      <IconButton
-        sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
-        onClick={handleWishlistToggle}
-        color={isWishlisted ? "error" : "default"}
-      >
-        {isWishlisted ? <Favorite /> : <FavoriteBorder />}
-      </IconButton>
+      {!hideWishlistButton && (
+        <IconButton
+          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
+          onClick={handleWishlistToggle}
+          color={isWishlisted ? "error" : "default"}
+        >
+          {isWishlisted ? <Favorite /> : <FavoriteBorder />}
+        </IconButton>
+      )}
       
       <CardMedia component="img" alt={product.name} image={product.image}/>
       

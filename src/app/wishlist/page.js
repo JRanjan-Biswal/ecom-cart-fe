@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
+import ProtectedRoute from "../../components/ProtectedRoute";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-export default function WishlistPage() {
+function WishlistPageContent() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -59,16 +60,30 @@ export default function WishlistPage() {
                 <Grid item xs={6} sm={4} md={3} key={item._id}>
                   <Paper sx={{ position: "relative", overflow: "hidden" }}>
                     <IconButton
-                      sx={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}
+                      sx={{ 
+                        position: "absolute", 
+                        top: 8, 
+                        right: 8, 
+                        zIndex: 10,
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 255, 255, 1)"
+                        }
+                      }}
                       color="error"
                       onClick={() => handleRemoveFromWishlist(item._id)}
+                      size="small"
                     >
                       <DeleteIcon />
                     </IconButton>
-                    <ProductCard 
-                      product={item} 
-                      handleAddToCart={(selectedItem) => handleAddToCart(selectedItem)} 
-                    />
+                    <Box>
+                      <ProductCard 
+                        product={item} 
+                        handleAddToCart={(selectedItem) => handleAddToCart(selectedItem)}
+                        hideWishlistButton={true}
+                      />
+                    </Box>
                   </Paper>
                 </Grid>
               ))}
@@ -78,6 +93,14 @@ export default function WishlistPage() {
       </Container>
       <Footer />
     </>
+  );
+}
+
+export default function WishlistPage() {
+  return (
+    <ProtectedRoute>
+      <WishlistPageContent />
+    </ProtectedRoute>
   );
 }
 

@@ -18,6 +18,29 @@ A modern, responsive e-commerce web application built with Next.js 14, React 18,
 
 EComCart is a full-featured e-commerce frontend that provides an intuitive shopping experience with modern UI/UX design. The application features user authentication, product browsing, shopping cart, wishlist functionality, and secure checkout process.
 
+## 📸 Screenshots
+
+![Homepage](screenshots/homepage.png)
+*Modern homepage with hero banner, product grid and search functionality*
+
+![Cart](screenshots/cart.png)
+*Shopping cart with item management*
+
+![Checkout](screenshots/checkout.png)
+*Secure checkout process*
+
+![Profile](screenshots/profile.png)
+*User profile management*
+
+![Wishlist](screenshots/wishlist.png)
+*User Wishlists with delte functionality*
+
+![Login](screenshots/login.png)
+*User login page with register now button*
+
+![Register](screenshots/register.png)
+*Register page with error handling*
+
 ## ✨ Features
 
 ### Core Functionality

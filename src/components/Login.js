@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, CircularProgress, Stack, TextField } from "@mui/material";
-import { Box } from "@mui/system";
+import { Button, CircularProgress, Stack, TextField, Typography, InputAdornment, IconButton } from "@mui/material";
+import { Box, Container } from "@mui/system";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import React, { useState } from "react";
@@ -13,6 +13,7 @@ import Header from "./Header";
 import "./Login.css";
 import { useDispatch } from "react-redux";
 import { loginSuccess, loginFailure } from "../store/slices/authSlice";
+import { Visibility, VisibilityOff, Email, Lock, ShoppingBag } from "@mui/icons-material";
 
 const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -23,6 +24,7 @@ const Login = () => {
     username: "",
     password: "",
     load: false,
+    showPassword: false,
   });
 
   const handleName = (e) => {
@@ -81,49 +83,118 @@ const Login = () => {
     return true;
   };
 
+  const handleClickShowPassword = () => {
+    setForm((form) => ({
+      ...form,
+      showPassword: !form.showPassword,
+    }));
+  };
+
   return (
-    <Box display="flex" flexDirection="column" justifyContent="space-between" minHeight="100vh">
+    <Box className="login-container">
       <Header hasHiddenAuthButtons />
-      <Box className="content">
-        <Stack spacing={2} className="form">
-          <h2 className="title">Login</h2>
-          <TextField
-            id="username"
-            name="username"
-            label="username"
-            placeholder="Enter Username"
-            variant="outlined"
-            onChange={handleName}
-            fullWidth
-          />
+      <Box className="login-hero">
+        <div maxWidth="lg" className="login-content">
+          {/* Left Side - Welcome Text */}
+          <Box className="login-welcome">
+            <Typography variant="h2" className="welcome-title">
+              Welcome to EComCart
+            </Typography>
+            <Typography variant="h5" className="welcome-subtitle">
+              Your Ultimate Shopping Destination
+            </Typography>
+          </Box>
 
-          <TextField
-            id="password"
-            name="password"
-            type="password"
-            label="password"
-            placeholder="Enter Password"
-            variant="outlined"
-            onChange={handlePassword}
-            fullWidth
-          />
-          {form.load ? (
-            <Box display="flex" justifyContent="center">
-              <CircularProgress />
+          {/* Right Side - Login Form */}
+          <Box className="login-card">
+            <Box className="login-header">
+              <Box className="logo-icon">
+                <ShoppingBag sx={{ fontSize: 40, color: "#fff" }} />
+              </Box>
+              <Typography variant="h3" className="login-title">
+                Welcome Back!
+              </Typography>
+              <Typography variant="body2" className="login-subtitle">
+                Sign in to continue to EComCart
+              </Typography>
             </Box>
-          ) : (
-            <Button className="button" variant="contained" onClick={() => login(form)}>
-              LOGIN TO ECOM和CART
-            </Button>
-          )}
 
-          <p className="secondary-action">
-            Don't have an account?{" "}
-            <Link href="/register" className="link">
-              Register now
-            </Link>
-          </p>
-        </Stack>
+            <Stack spacing={3} className="login-form">
+              <TextField
+                id="username"
+                name="username"
+                label="Username"
+                placeholder="Enter your username"
+                variant="outlined"
+                onChange={handleName}
+                fullWidth
+                className="login-input"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email sx={{ color: "#00a278" }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                id="password"
+                name="password"
+                type={form.showPassword ? "text" : "password"}
+                label="Password"
+                placeholder="Enter your password"
+                variant="outlined"
+                onChange={handlePassword}
+                fullWidth
+                className="login-input"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: "#00a278" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {form.showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {form.load ? (
+                <Box display="flex" justifyContent="center" py={2}>
+                  <CircularProgress size={40} />
+                </Box>
+              ) : (
+                <Button 
+                  className="login-button" 
+                  variant="contained" 
+                  onClick={() => login(form)}
+                  size="large"
+                  fullWidth
+                >
+                  Login to EComCart
+                </Button>
+              )}
+
+              <Box className="login-footer">
+                <Typography variant="body2" className="login-footer-text">
+                  Don't have an account?{" "}
+                  <Link href="/register" className="login-link">
+                    Register now
+                  </Link>
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+        </div>
       </Box>
       <Footer />
     </Box>
