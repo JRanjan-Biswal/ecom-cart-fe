@@ -34,7 +34,7 @@ const Thanks = () => {
         <p>You will receive an invoice for your order shortly.</p>
         <p>Your order will arrive in 7 business days.</p>
         <p id="balance-overline">Wallet Balance</p>
-        <p id="balance">${balance} Available</p>
+        <p id="balance">₹{balance} Available</p>
         <Button
           variant="contained"
           size="large"

@@ -1,89 +1,68 @@
+"use client";
+
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Avatar, Button, Stack } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import { Avatar, Button, Stack, IconButton, Badge } from "@mui/material";
 import Box from "@mui/material/Box";
-import React from "react";
+import React, { useEffect } from "react";
 import "./Header.css";
 import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { logout, initializeAuth } from "../store/slices/authSlice";
+import CartIcon from "./CartIcon";
 
 const Header = ({ children, hasHiddenAuthButtons }) => {
   const router = useRouter();
-  const [mounted, setMounted] = React.useState(false);
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const wishlistCount = useSelector((state) => state.wishlist.items.length);
 
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
 
-  const user = mounted ? localStorage.getItem("username") : null;
-  const isLogIn = user ? true : false;
-
-  const loggingOut = () => {
-    localStorage.clear();
+  const handleLogout = () => {
+    dispatch(logout());
     router.push("/");
     window.location.reload();
   };
 
   return (
     <Box className="header">
-      <Box
-        className="header-title"
-        onClick={() => {
-          router.push("/");
-        }}
-      >
+      <Box className="header-title" onClick={() => router.push("/")}>
         <img src="/logo_light.svg" alt="EcomCart-icon"></img>
       </Box>
 
-      {/* the children here signifies the textfield from line no. 163 ,that header returns as child in the product.js file
-    this states that => this.props.children */}
       {children}
 
       {hasHiddenAuthButtons && (
-        <Button
-          className="explore-button"
-          startIcon={<ArrowBackIcon />}
-          variant="text"
-          onClick={() => {
-            router.push("/");
-          }}
-        >
+        <Button className="explore-button" startIcon={<ArrowBackIcon />} variant="text" onClick={() => router.push("/")}>
           Back to explore
         </Button>
       )}
 
-      {isLogIn && (
-        <Stack direction="row" justifyContent="center" alignItems="center">
-          <div
-            style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
-            onClick={() => {
-              router.push("/checkout");
-            }}
-          >
+      {isAuthenticated && (
+        <Stack direction="row" justifyContent="center" alignItems="center" spacing={1}>
+          <CartIcon />
+          <IconButton onClick={() => router.push("/wishlist")} color="inherit">
+            <Badge badgeContent={wishlistCount} color="error">
+              <FavoriteIcon />
+            </Badge>
+          </IconButton>
+          <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => router.push("/profile")}>
             <Avatar alt={user} src="/avatar.png" />
-            <div>{localStorage.getItem("username")}</div>
+            <div>{user}</div>
           </div>
-          <Button variant="text" onClick={loggingOut}>
+          <Button variant="text" onClick={handleLogout}>
             logout
           </Button>
         </Stack>
       )}
 
-      {!isLogIn && !hasHiddenAuthButtons && (
+      {!isAuthenticated && !hasHiddenAuthButtons && (
         <Stack direction="row">
-          <Button
-            onClick={() => {
-              router.push("/login");
-            }}
-          >
-            login
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              router.push("/register");
-            }}
-          >
-            register
-          </Button>
+          <Button onClick={() => router.push("/login")}>login</Button>
+          <Button variant="contained" onClick={() => router.push("/register")}>register</Button>
         </Stack>
       )}
     </Box>

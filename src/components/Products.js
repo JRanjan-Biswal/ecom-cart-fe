@@ -1,3 +1,5 @@
+"use client";
+
 import { Search } from "@mui/icons-material";
 import { CircularProgress, Grid, InputAdornment, TextField } from "@mui/material";
 import { Box } from "@mui/system";
@@ -9,46 +11,56 @@ import Footer from "./Footer";
 import Header from "./Header";
 import "./Products.css";
 import ProductCard from "./ProductCard";
-import Cart from "./Cart";
+import { useSelector, useDispatch } from "react-redux";
+import { setCartItems, setProducts } from "../store/slices/cartSlice";
 import { generateCartItemsFrom } from "./Cart";
 
 const Products = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const userNameInLocalStorage = mounted ? window.localStorage.getItem("username") : null;
-  const logIn_NameIsPresent = userNameInLocalStorage ? true : false;
-  const token = mounted ? window.localStorage.getItem("token") : null;
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  const cartItems = useSelector((state) => state.cart.items);
+  const products = useSelector((state) => state.cart.products);
 
   const [data, setData] = useState({
     data: [],
     items: [],
   });
-  const [cartLoad, setCartLoad] = useState(false);
   const [load, setLoad] = useState(false);
   const [success, setSuccess] = useState(false);
   const [delay, setDelay] = useState(0);
 
   useEffect(() => {
     performAPICall();
+    initializeCart();
   }, []);
 
+  const initializeCart = async () => {
+    if (typeof window !== "undefined") {
+      const token = window.localStorage.getItem("token");
+      if (token) {
+        await fetchCart(token);
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchCart(token);
-  }, [cartLoad]);
+    if (products.length > 0) {
+      const token = typeof window !== "undefined" ? window.localStorage.getItem("token") : null;
+      if (token) {
+        fetchCart(token);
+      }
+    }
+  }, [products]);
 
   const performAPICall = async () => {
     setLoad(true);
     try {
       const response = await axios.get(`${config.endpoint}/products`);
       setData((val) => ({ ...val, data: response.data }));
+      dispatch(setProducts(response.data));
       setSuccess(true);
       setLoad(false);
-      setCartLoad(true);
     } catch (error) {
       enqueueSnackbar(error.response.statusText, { variant: "warning" });
       setLoad(false);
@@ -71,58 +83,62 @@ const Products = () => {
 
   const fetchCart = async (token) => {
     if (!token) return;
-
     try {
       const response = await axios.get(`${config.endpoint}/cart`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
-      setData((val) => ({ ...val, items: generateCartItemsFrom(response.data, data.data) }));
+      
+      // Use all products from Redux state, or fallback to local data
+      const allProducts = products.length > 0 ? products : data.data;
+      const cartItems = generateCartItemsFrom(response.data, allProducts);
+      if (cartItems) {
+        dispatch(setCartItems(cartItems));
+      }
     } catch (e) {
       if (e.response && e.response.status === 400) {
         enqueueSnackbar(e.response.data.message, { variant: "error" });
-      } else {
-        enqueueSnackbar("Could not fetch cart details. Check that the backend is running.", { variant: "error" });
       }
-      return null;
     }
   };
 
-  const isItemInCart = (items, productId) => {
-    if (items === undefined) return false;
-    
-    let itemAlreadyPresentInCart = false;
-    items.map((item) => {
-      if (item.productId === productId) {
-        itemAlreadyPresentInCart = true;
-      }
-    });
-    return itemAlreadyPresentInCart;
-  };
-
   const handleCart = (productid) => {
-    addToCart(token, data.items, data.data, productid, 1);
-  };
-
-  const handleQuantity = (itemInCartId, qtyToChange) => {
-    addToCartMain(itemInCartId, qtyToChange);
-  };
-
-  const addToCart = async (token, items, products, productId, qty) => {
-    if (token) {
-      if (!isItemInCart(items, productId)) {
-        addToCartMain(productId, qty);
+    if (!isAuthenticated) {
+      enqueueSnackbar("Please login to add items to cart", { variant: "warning" });
+      return;
+    }
+    
+    const product = data.data.find(p => p._id === productid);
+    if (product) {
+      // Check if product is already in cart
+      const existingCartItem = cartItems.find(item => item.productId === productid);
+      if (existingCartItem) {
+        // If already in cart, increase quantity by 1
+        addToCartMain(productid, existingCartItem.qty + 1);
       } else {
-        enqueueSnackbar("Item already in cart. Use the cart sidebar to update quantity.", { variant: "warning" });
+        // Add new item to cart
+        addToCartMain(productid, 1);
       }
-    } else {
-      enqueueSnackbar("Login to add an item to the Cart", { variant: "warning" });
     }
   };
 
   const addToCartMain = async (productId, qty) => {
+    if (!isAuthenticated) {
+      enqueueSnackbar("Please login to add items to cart", { variant: "warning" });
+      return;
+    }
+    
     try {
+      if (typeof window === "undefined") return;
+      const token = window.localStorage.getItem("token");
+      if (!token) {
+        enqueueSnackbar("Please login to add items to cart", { variant: "warning" });
+        return;
+      }
+
+      const product = data.data.find(p => p._id === productId);
+      
       const response = await axios.post(`${config.endpoint}/cart`, {
         "productId": productId,
         "qty": qty,
@@ -131,10 +147,24 @@ const Products = () => {
           'Authorization': `Bearer ${token}`,
         }
       });
-      setData((data) => ({ ...data, items: generateCartItemsFrom(response.data, data.data) }));
+      
+      const cartItems = generateCartItemsFrom(response.data, data.data);
+      dispatch(setCartItems(cartItems || []));
+      
+      // Show success toast
+      const existingCartItem = cartItems.find(item => item.productId === productId);
+      if (existingCartItem && existingCartItem.qty === qty) {
+        enqueueSnackbar("Item already in cart! Quantity updated", { variant: "info" });
+      } else {
+        enqueueSnackbar(`${product?.name || "Item"} added to cart!`, { variant: "success" });
+      }
     } catch (error) {
       if (error.response) {
-        enqueueSnackbar(error.response.statusText, { variant: "error" });
+        if (error.response.status === 400 && error.response.data.message?.includes("already")) {
+          enqueueSnackbar("Item already in cart! Please update quantity from cart.", { variant: "info" });
+        } else {
+          enqueueSnackbar(error.response.data.message || "Failed to add to cart", { variant: "error" });
+        }
       }
     }
   };
@@ -187,7 +217,7 @@ const Products = () => {
       />
 
       <Grid container mb={2}>
-        <Grid item md={logIn_NameIsPresent ? 9 : 12}>
+        <Grid item xs={12}>
           <Grid item className="product-grid">
             <Box className="hero">
               <p className="hero-heading">
@@ -226,12 +256,6 @@ const Products = () => {
             </Grid>
           </Grid>
         </Grid>
-
-        {logIn_NameIsPresent && (
-          <Grid item md={3} xs={12} style={{ backgroundColor: "#E9F5E1" }} mb={2}>
-            <Cart products={data.data} items={data.items} handleQuantity={handleQuantity} />
-          </Grid>
-        )}
       </Grid>
 
       <Footer />

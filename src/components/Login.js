@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, CircularProgress, Stack, TextField } from "@mui/material";
 import { Box } from "@mui/system";
 import axios from "axios";
@@ -9,10 +11,13 @@ import { config } from "../config";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Login.css";
+import { useDispatch } from "react-redux";
+import { loginSuccess, loginFailure } from "../store/slices/authSlice";
 
 const Login = () => {
   const { enqueueSnackbar } = useSnackbar();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [form, setForm] = useState({
     username: "",
@@ -46,13 +51,17 @@ const Login = () => {
         
         const { token, username, balance } = response.data;
         setForm((form) => ({ ...form, load: false }));
+        
+        // Use Redux to store auth state
+        dispatch(loginSuccess({ token, username, balance }));
+        
         enqueueSnackbar("Logged in successfully", { variant: "success" });
-        persistLogin(token, username, balance);
         router.push("/");
       }
     } catch (error) {
       setForm((form) => ({ ...form, load: false }));
-      if (error.response.status >= 400) {
+      dispatch(loginFailure());
+      if (error.response && error.response.status >= 400) {
         const messageFromBackend = error.response.data.message;
         enqueueSnackbar(messageFromBackend, { variant: "error" });
       } else {
@@ -70,12 +79,6 @@ const Login = () => {
       return false;
     }
     return true;
-  };
-
-  const persistLogin = (token, username, balance) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("username", username);
-    localStorage.setItem("balance", balance);
   };
 
   return (

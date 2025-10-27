@@ -64,7 +64,7 @@ const GetTotalItems = (items = [], readOnly) => {
                 <h4>Total</h4>
               </Box>
               <Box paddingBottom="1rem">
-                <h4>{total}</h4>
+                <h4>₹{total}</h4>
               </Box>
             </Box>
           </Stack>
@@ -132,7 +132,7 @@ const Cart = ({ isReadOnly = false, products, items = [], handleQuantity }) => {
                   readOnly={isReadOnly}
                 />
                 <Box padding="0.5rem" fontWeight="700">
-                  ${item.cost}
+                  ₹{item.cost}
                 </Box>
               </Box>
             </Box>
@@ -144,7 +144,7 @@ const Cart = ({ isReadOnly = false, products, items = [], handleQuantity }) => {
             Order total
           </Box>
           <Box color="#3C3C3C" fontWeight="700" fontSize="1.5rem" alignSelf="center" data-testid="cart-total">
-            ${getTotalCartValue(items)}
+            ₹{getTotalCartValue(items)}
           </Box>
         </Box>
 

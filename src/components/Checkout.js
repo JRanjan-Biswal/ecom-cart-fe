@@ -1,3 +1,5 @@
+"use client";
+
 import { CreditCard, Delete } from "@mui/icons-material";
 import { Button, Divider, Grid, Stack, TextField, Typography } from "@mui/material";
 import { Box } from "@mui/system";
@@ -5,7 +7,9 @@ import axios from "axios";
 import { useSnackbar } from "notistack";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { config } from "../config";
+import { clearCart } from "../store/slices/cartSlice";
 import Cart, { getTotalCartValue, generateCartItemsFrom } from "./Cart";
 import "./Checkout.css";
 import Footer from "./Footer";
@@ -35,36 +39,42 @@ const AddNewAddressView = ({ token, newAddress, handleNewAddress, addAddress }) 
 const Checkout = () => {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch();
   const [token, setToken] = useState(null);
   const [balance, setBalance] = useState(null);
   const [items, setItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [addresses, setAddresses] = useState({ all: [], selected: "" });
   const [newAddress, setNewAddress] = useState({ isAddingNewAddress: false, value: "" });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem("token");
       const storedBalance = localStorage.getItem("balance");
-      setToken(storedToken);
-      setBalance(storedBalance);
+      if (storedToken) setToken(storedToken);
+      if (storedBalance) setBalance(storedBalance);
     }
   }, []);
 
   useEffect(() => {
-    if (token) {
-      const onLoad = async () => {
-        await getAddresses(token);
-      };
-      onLoad();
+    if (!mounted) return;
+    if (!token) {
+      enqueueSnackbar("You must be logged in to access checkout page", { variant: "info" });
+      router.push("/login");
     }
-  }, [token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, token]);
 
-  if (!token) {
-    enqueueSnackbar("You must be logged in to access checkout page", { variant: "info" });
-    router.push("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!token || !mounted) return;
+    const loadAddresses = async () => {
+      await getAddresses(token);
+    };
+    loadAddresses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, mounted]);
 
   const getProducts = async () => {
     try {
@@ -183,6 +193,10 @@ const Checkout = () => {
             }
           }
         );
+        
+        // Clear the cart from Redux store
+        dispatch(clearCart());
+        
         enqueueSnackbar("Checkout Successful", { variant: "success" });
         router.push("/thanks");
         return true;
@@ -194,6 +208,7 @@ const Checkout = () => {
   };
 
   useEffect(() => {
+    if (!token || !mounted) return;
     const onLoadHandler = async () => {
       const productsData = await getProducts();
       const cartData = await fetchCart(token);
@@ -203,7 +218,12 @@ const Checkout = () => {
       }
     };
     onLoadHandler();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, mounted]);
+
+  if (!mounted || !token) {
+    return null;
+  }
 
   return (
     <>
@@ -260,7 +280,7 @@ const Checkout = () => {
 
             <Box my="1rem">
               <Typography>Wallet</Typography>
-              <Typography>Pay ${getTotalCartValue(items)} of available ${balance || 0}</Typography>
+              <Typography>Pay ₹{getTotalCartValue(items)} of available ₹{balance || 0}</Typography>
             </Box>
 
             <Button startIcon={<CreditCard />} variant="contained"

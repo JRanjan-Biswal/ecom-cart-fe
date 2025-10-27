@@ -9,12 +9,14 @@ export default function Providers({ children }) {
   return (
     <ThemeProvider theme={theme}>
       <SnackbarProvider
-        maxSnack={1}
+        maxSnack={3}
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "center",
+          horizontal: "right",
         }}
+        autoHideDuration={3000}
         preventDuplicate
+        dense={false}
       >
         {children}
       </SnackbarProvider>
