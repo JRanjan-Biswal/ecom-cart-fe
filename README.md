@@ -2,6 +2,12 @@
 
 A modern, responsive e-commerce web application built with Next.js 14, React 18, and Material-UI.
 
+
+## 🔗 Related Repositories
+
+- **Backend**: [ecom-cart-be (https://github.com/JRanjan-Biswal/ecom-cart-be.git)](https://github.com/JRanjan-Biswal/ecom-cart-be.git) - EComCart backend API
+
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)
@@ -351,10 +357,6 @@ npm install
 - Verify backend is running on port 8082
 - Check API endpoint in config.js
 - Verify CORS settings in backend
-
-## 🔗 Related Repositories
-
-- **Backend**: [ecom-cart-be (https://github.com/JRanjan-Biswal/ecom-cart-be.git)](https://github.com/JRanjan-Biswal/ecom-cart-be.git) - EComCart backend API
 
 ## 📝 License
 
