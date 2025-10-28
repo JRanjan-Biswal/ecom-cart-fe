@@ -3,7 +3,7 @@
 A modern, responsive e-commerce web application built with Next.js 14, React 18, and Material-UI.
 
 ## Live Link
-- **Frontend Url**: [https://ecom-cart-fe.onrender.com](https://ecom-cart-fe.onrender.com)
+- **Frontend Url**: [https://ecom-cart-be-dphn.vercel.app/](https://ecom-cart-be-dphn.vercel.app/)
 
 
 ## 🔗 Related Repositories
